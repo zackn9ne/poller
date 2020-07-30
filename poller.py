@@ -1,6 +1,5 @@
 #!/usr/bin/python
-#this is the actual updater tool
-  
+# this is the actual updater tool
 import subprocess
 import shlex
 import os.path
@@ -52,21 +51,26 @@ popup_b = (
     'Just my luck...'
 )
 plug_in = (
-    '/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper',
+    '''/Library/Application Support/JAMF/bin/jamfHelper.app/
+    Contents/MacOS/jamfHelper''',
     '-windowType',
     'hud',
     'You are on battery',
     '-title',
     'please wait...',
     '-description',
-    'Nice try but you need to have your charger plugged in, go find it and rerun this program please',
+    '''Nice try but you need to have your charger plugged in, go find it and
+    rerun this program please''',
     '-icon',
-    '/System/Library/CoreServices/Problem Reporter.app/Contents/Resources/ProblemReporter.icns',
+    '''/System/Library/CoreServices/Problem Reporter.app/Contents/
+    Resources/ProblemReporter.icns''',
     '-defaultbutton',
     '1',
     '-button1',
     'Finding Charger'
 )
+
+
 def check_for_installer(cmd):
     if os.path.isfile(cmd):
         fire_window(popup_a)
@@ -77,6 +81,7 @@ def check_for_installer(cmd):
         run_command(catalina_lt_pkg)
         return False
 
+
 def check_for_battery(cmd):
     if 'No adapter attached.' in run_regular(cmd):
         print('battery user')
@@ -86,8 +91,9 @@ def check_for_battery(cmd):
 
 def run_regular(cmd):
     data = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout,stderr = data.communicate()
+    stdout, stderr = data.communicate()
     return stdout
+
 
 def run_command(cmd):
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
@@ -95,20 +101,20 @@ def run_command(cmd):
     while True:
         output = process.stdout.readline()
         if output == '' and process.poll() is not None:
-            break   
-        if output: 
-            print output.strip()
+            break
+        if output:
+            print(output.strip())
     rc = process.poll()
     return rc
 
 
-def fire_window(cmd): #feed me a build_window()
+def fire_window(cmd): # feed me a build_window()
 
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 def main():
-    #if check_for_installer(catalina[0]) and check_for_battery(pmset):
+    # if check_for_installer(catalina[0]) and check_for_battery(pmset):
     if check_for_battery(pmset):
         if check_for_installer(catalina[0]):
             if environment != 'DEV':
