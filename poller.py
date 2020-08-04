@@ -1,10 +1,16 @@
-#!/usr/bin/env python3
+#!/usr/bin/python
+
 # this is the actual updater tool
+# checks if already upgraded
+# checks for battery
+# checks for installer
+
 import subprocess
 import shlex
 import os.path
 
 # env var
+DEVenvironment = False
 DEVenvironment = True
 
 # user vars
@@ -15,6 +21,7 @@ catalina_lt_pkg = ('jamf', 'policy', '-event', 'install-catalina-lt')
 ls = ('ls', '-ltar')
 pwd = ('pwd')
 pmset = shlex.split('pmset -g ac')
+osv = shlex.split('sw_vers -productVersion')
 
 # windows
 popup_a = (
@@ -74,9 +81,38 @@ Resources/ProblemReporter.icns''',
     '-button1',
     'Close'
 )
+already_upgraded = (
+    '''/Library/Application Support/JAMF/bin/jamfHelper.app/\
+Contents/MacOS/jamfHelper''',
+    '-windowType',
+    'hud',
+    'You already upgraded',
+    '-title',
+    'success',
+    '-description',
+    '''You have already upgraded, thank you.''',
+    '-icon',
+    '''/System/Library/CoreServices/Problem Reporter.app/Contents/\
+Resources/ProblemReporter.icns''',
+    '-defaultbutton',
+    '1',
+    '-button1',
+    'Close'
+)
+target = "10.15"
+
+def check_os_version(cmd):
+    '''do we even need to do this'''
+    data = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT)
+    stdout, stderr = data.communicate()
+    formatted_float = stdout.decode("utf-8") 
+    return formatted_float
+
 
 
 def check_for_installer(cmd):
+    '''is os installer on disk'''
     if os.path.isfile(cmd):
         return True
     else:
@@ -88,6 +124,7 @@ def check_for_installer(cmd):
 
 
 def check_for_battery(cmd):
+    '''is it plugged in'''
     if 'No adapter attached.' in run_regular(cmd):
         print('battery check not passed')
         return False
@@ -96,6 +133,7 @@ def check_for_battery(cmd):
 
 
 def run_regular(cmd):
+    '''run a simple shell command'''
     data = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
     stdout, stderr = data.communicate()
@@ -103,6 +141,7 @@ def run_regular(cmd):
 
 
 def run_command(cmd):
+    '''run a shell command with a while loop'''
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
 
     while True:
@@ -115,11 +154,17 @@ def run_command(cmd):
     return rc
 
 
-def fire_window(cmd):  # feed me a build_window()
+def fire_window(cmd):  
+    '''fire a window feed me a build_window list'''
     subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 def main():
+    os_version = check_os_version(osv)
+    if target in os_version:
+        fire_window(already_upgraded)
+        exit('error user already upgraded: {}'.format(os_version))
+
     installer_there = check_for_installer(catalina[0])
     plug_there = check_for_battery(pmset)
 
@@ -128,11 +173,12 @@ def main():
             fire_window(popup_a)
             run_command(catalina)
         else:
-            print('all conditions passed but: dev mode not making any changes')
+            print('all conditions passed but\
+                    dev mode not making any changes')
     elif installer_there and not plug_there:
         fire_window(plug_in)
     else:
-        print('giving up')
+        exit('giving up, we do not know what happened')
 
 
 if __name__ == "__main__":
