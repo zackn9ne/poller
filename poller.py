@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/opt/advisory/python3.7
 
 # this is the actual updater tool
 # checks if already upgraded
@@ -8,6 +8,7 @@
 import subprocess
 import shlex
 import os.path
+import makewindow
 
 # env var
 DEVenvironment = False
@@ -23,7 +24,14 @@ pwd = ('pwd')
 pmset = shlex.split('pmset -g ac')
 osv = shlex.split('sw_vers -productVersion')
 
-# windows
+d = makewindow.Make_Window()
+# you can now make buttons with 3 lines of code
+d.make_list('completed', 'upgrade completed', 'great')
+upgraded_window = d.list_it()
+
+dev_window = d.make_list('asdf', 'fasdf', 'great')
+missing_installer = d.make_list('missing installer', 'dude', 'no')
+
 popup_a = (
     '''/Library/Application Support/JAMF/bin/jamfHelper.app/\
 Contents/MacOS/jamfHelper''',
@@ -53,15 +61,15 @@ popup_b = (
     '-title',
     'please wait...',
     '-description',
-    'We need a breif installer download, press the button to \
-acknowledge and try again shortly.',
+    'We need to run a management action to prepare your computer \
+press the button to acknowledge and try again shortly.',
     '-icon',
     '''/System/Library/CoreServices/Problem Reporter.app/Contents/\
 Resources/ProblemReporter.icns''',
     '-defaultbutton',
     '1',
     '-button1',
-    'Just my luck...'
+    'Will do'
 )
 plug_in = (
     '''/Library/Application Support/JAMF/bin/jamfHelper.app/\
@@ -117,7 +125,7 @@ def check_for_installer(cmd):
         return True
     else:
         # who cares about battery for this
-        print('installer not found, downloading JSS')
+        print(f'{cmd}installer not found, running JSS command {catalina_lt_pkg}.')
         fire_window(popup_b)
         run_command(catalina_lt_pkg)
         return False
@@ -162,8 +170,10 @@ def fire_window(cmd):
 def main():
     os_version = check_os_version(osv)
     if target in os_version:
-        fire_window(already_upgraded)
-        exit('error user already upgraded: {}'.format(os_version))
+        fire_window(upgraded_window)
+        exit(f'error user already upgraded: {os_version}')
+    else:
+        print(f'os version {os_version} needs help')
 
     installer_there = check_for_installer(catalina[0])
     plug_there = check_for_battery(pmset)
