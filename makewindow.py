@@ -17,9 +17,9 @@ jamfHelper.app/Contents/MacOS/jamfHelper''',
                 Connect your changer and Work at your own risk a reboot is immintent.''',
             'cmd4': '-icon',
             'icon': '''/System/Library/CoreServices/Problem Reporter.app/Contents/Resources/ProblemReporter.icns''',
-            'cmd4': '-defaultbutton',
+            'cmd5': '-defaultbutton',
             'default_btn':'1',
-            'cmd5': 'btn',
+            'cmd6': '-button1',
             'button': 'Great'
         } 
 
@@ -30,7 +30,7 @@ jamfHelper.app/Contents/MacOS/jamfHelper''',
             #print(k, v)
             #windowz.append(k)
             windowz.append(v)
-        #print(f"windowz is {windowz}")
+        print(f"windowz is {windowz}")
         return windowz
 
 
