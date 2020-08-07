@@ -134,7 +134,7 @@ def check_for_installer(cmd):
 def check_for_battery(cmd):
     '''is it plugged in'''
     batt_output = run_regular(cmd)
-    if 'AC Adapter' in batt_output:
+    if 'AC Power' in batt_output:
         return True
     else:
         print(f'battery check not passed: {batt_output}')
@@ -173,8 +173,6 @@ def main():
     if target in os_version:
         fire_window(upgraded_window)
         exit(f'error user already upgraded: {os_version}')
-    else:
-        print(f'os version {os_version} needs help')
 
     installer_there = check_for_installer(catalina[0])
     plug_there = check_for_battery(pmset)
