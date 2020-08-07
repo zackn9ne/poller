@@ -21,7 +21,7 @@ safari = ('open', '-a', 'Safari.app')
 catalina_lt_pkg = ('jamf', 'policy', '-event', 'install-catalina-lt')
 ls = ('ls', '-ltar')
 pwd = ('pwd')
-pmset = shlex.split('pmset -g ac')
+pmset = shlex.split('pmset -g batt')
 osv = shlex.split('sw_vers -productVersion')
 
 d = makewindow.Make_Window()
@@ -133,11 +133,12 @@ def check_for_installer(cmd):
 
 def check_for_battery(cmd):
     '''is it plugged in'''
-    if 'No adapter attached.' in run_regular(cmd):
-        print('battery check not passed')
-        return False
-    else:
+    batt_output = run_regular(cmd)
+    if 'AC Adapter' in batt_output:
         return True
+    else:
+        print(f'battery check not passed: {batt_output}')
+        return False
 
 
 def run_regular(cmd):
