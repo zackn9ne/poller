@@ -23,42 +23,76 @@ ls = ('ls', '-ltar')
 pwd = ('pwd')
 pmset = shlex.split('pmset -g batt')
 osv = shlex.split('sw_vers -productVersion')
-target = "10.14"
 
-# use the makewindow module
-Mw = makewindow.Make_Window
-uc = Mw(
-    'acompleted',
-    'upgrade completed',
-    'great'
-    )
-im = Mw(
-    'installer missing',
+# instsanciate class
+#d = makewindow.Make_Window()
+# you can now make buttons with 3 lines of code
+# window bank
+upgraded_window = makewindow.Make_Window().make_list('completed', 'upgrade completed', 'great')
+installer_needed = makewindow.Make_Window().make_list('downloading...', 
     'We need to run a management action to prepare your computer \
-press the button to acknowledge and try again shortly.',
-    'no')
-dm = Mw(
-    'dev mode',
-    'conditions passed but doing nothing because dev mode',
-    'great'
-    )
-ip = Mw(
+press the button to acknowledge and try again shortly.', 'Okay')
+dev_window = d.make_list('dev mode', 'all conditions passed, gracefully doing nothing', 'great')
+missing_installer = makewindow.Make_Window().make_list('missing installer', 'dude', 'no')
+
+popup_a = (
+    '''/Library/Application Support/JAMF/bin/jamfHelper.app/\
+Contents/MacOS/jamfHelper''',
+    '-windowType',
+    'hud',
     'update in progress',
+    '-title',
+    'please wait...',
+    '-description',
     '''We need you to hold on because a the installer is running.
 
     Connect your changer and Work at your own risk a reboot is immintent.''',
-    'Read Me'
-    )
-pm = Mw(
+    '-icon',
+    '''/System/Library/CoreServices/Problem Reporter.app/Contents/\
+Resources/ProblemReporter.icns''',
+    '-defaultbutton',
+    '1',
+    'btn',
+    'Great'
+)
+popup_b = (
+    '/Library/Application Support/JAMF/bin/jamfHelper.app/Contents\
+/MacOS/jamfHelper',
+    '-windowType',
+    'hud',
+    'downloading installer',
+    '-title',
+    'please wait...',
+    '-description',
+    'We need to run a management action to prepare your computer \
+press the button to acknowledge and try again shortly.',
+    '-icon',
+    '''/System/Library/CoreServices/Problem Reporter.app/Contents/\
+Resources/ProblemReporter.icns''',
+    '-defaultbutton',
+    '1',
+    '-button1',
+    'Will do'
+)
+plug_in = (
+    '''/Library/Application Support/JAMF/bin/jamfHelper.app/\
+Contents/MacOS/jamfHelper''',
+    '-windowType',
+    'hud',
     'You are on battery',
+    '-title',
+    'please wait...',
+    '-description',
     '''Please connect a charger and rerun this program.''',
+    '-icon',
+    '''/System/Library/CoreServices/Problem Reporter.app/Contents/\
+Resources/ProblemReporter.icns''',
+    '-defaultbutton',
+    '1',
+    '-button1',
     'Close'
 )
-uc = uc.create()
-im = im.create()
-dm = dm.create()
-ip = ip.create()
-pm = pm.create()
+target = "10.16"
 
 def check_os_version(cmd):
     '''do we even need to do this'''
@@ -77,7 +111,7 @@ def check_for_installer(cmd):
     else:
         # who cares about battery for this
         print(f'{cmd}installer not found, running JSS command {catalina_lt_pkg}.')
-        fire_window(im)
+        fire_window(installer_needed)
         run_command(catalina_lt_pkg)
         return False
 
@@ -122,7 +156,7 @@ def fire_window(cmd):
 def main():
     os_version = check_os_version(osv)
     if target in os_version:
-        fire_window(uc)
+        fire_window(upgraded_window)
         exit(f'error user already upgraded: {os_version}')
 
     installer_there = check_for_installer(catalina[0])
@@ -130,13 +164,13 @@ def main():
 
     if installer_there and plug_there:
         if DEVenvironment is not True:
-            fire_window(ip)
+            fire_window(popup_a)
             run_command(catalina)
         else:
             print('all conditions passed but\
                     dev mode not making any changes')
     elif installer_there and not plug_there:
-        fire_window(pm)
+        fire_window(plug_in)
     else:
         exit('giving up, we do not know what happened')
 
