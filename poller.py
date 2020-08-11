@@ -133,6 +133,7 @@ def main():
             fire_window(ip)
             run_command(catalina)
         else:
+            fire_window(dm)
             print('all conditions passed but\
                     dev mode not making any changes')
     elif installer_there and not plug_there:
