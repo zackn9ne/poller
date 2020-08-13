@@ -8,11 +8,8 @@
 import subprocess
 import shlex
 import os.path
+import argparse
 import makewindow
-
-# env var
-DEVenvironment = False
-DEVenvironment = True
 
 # user vars
 catalina = ('/Applications/Install macOS Catalina.app/Contents/\
@@ -36,12 +33,7 @@ im = Mw(
     'installer missing',
     'We need to run a management action to prepare your computer \
 press the button to acknowledge and try again shortly.',
-    'no')
-dm = Mw(
-    'dev mode',
-    'conditions passed but doing nothing because dev mode',
-    'great'
-    )
+    'Okay')
 ip = Mw(
     'update in progress',
     '''We need you to hold on because a the installer is running.
@@ -54,14 +46,23 @@ pm = Mw(
     '''Please connect a charger and rerun this program.''',
     'Close'
 )
-uc = uc.create()
-im = im.create()
-dm = dm.create()
-ip = ip.create()
-pm = pm.create()
+
+def get_args():
+    '''cli args'''
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--dry-run", action="store_true", default=''
+    )
+
+    args = parser.parse_args()
+    if args.dry_run:
+        print (f'results are: {args}')
+        DEVenvironment = True
+        print(f'dev environment is: {DEVenvironment}')
+        return DEVenvironment
 
 def check_os_version(cmd):
-    '''do we even need to do this'''
+    '''return current macos version'''
     data = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
     stdout, stderr = data.communicate()
@@ -69,21 +70,18 @@ def check_os_version(cmd):
     return formatted_float
 
 
-
 def check_for_installer(cmd):
-    '''is os installer on disk'''
+    '''is os upgrade installer on disk'''
     if os.path.isfile(cmd):
         return True
     else:
         # who cares about battery for this
         print(f'{cmd}installer not found, running JSS command {catalina_lt_pkg}.')
-        fire_window(im)
-        run_command(catalina_lt_pkg)
         return False
 
 
 def check_for_battery(cmd):
-    '''is it plugged in'''
+    '''is it on AC Power'''
     batt_output = run_regular(cmd)
     if 'AC Power' in batt_output:
         return True
@@ -120,26 +118,35 @@ def fire_window(cmd):
 
 
 def main():
+    '''set DEVenvironment from command line arg'''
+    DEVenvironment = get_args()
+
+    '''check if we have to do anything'''
     os_version = check_os_version(osv)
     if target in os_version:
-        fire_window(uc)
+        fire_window(uc.create())
         exit(f'error user already upgraded: {os_version}')
 
+    '''now do things'''
     installer_there = check_for_installer(catalina[0])
     plug_there = check_for_battery(pmset)
 
+    '''installer check'''
+    if DEVenvironment and not installer_there:
+        print(f'DEVenvironment: {DEVenvironment}. Popup would be: installer missing')
+    if not DEVenvironment and not installer_there:
+        fire_window(im.create())
+        run_command(catalina_lt_pkg)
+
+    '''power check'''
+    if installer_there and not plug_there:
+        fire_window(pm)
+
+    '''the business end'''
     if installer_there and plug_there:
         if DEVenvironment is not True:
-            fire_window(ip)
+            fire_window(ip.create)
             run_command(catalina)
-        else:
-            fire_window(dm)
-            print('all conditions passed but\
-                    dev mode not making any changes')
-    elif installer_there and not plug_there:
-        fire_window(pm)
-    else:
-        exit('giving up, we do not know what happened')
 
 
 if __name__ == "__main__":

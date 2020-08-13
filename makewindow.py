@@ -28,5 +28,5 @@ jamfHelper.app/Contents/MacOS/jamfHelper''',
             #print(k, v)
             #windowz.append(k)
             self.windowz.append(v)
-        print(f"windowz is {self.windowz}")
+        print(f"creating window command: {self.windowz}")
         return self.windowz
