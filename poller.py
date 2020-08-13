@@ -66,7 +66,7 @@ def check_os_version(cmd):
     data = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
     stdout, stderr = data.communicate()
-    formatted_float = stdout.decode("utf-8") 
+    formatted_float = stdout.decode("utf-8")
     return formatted_float
 
 
@@ -112,7 +112,7 @@ def run_command(cmd):
     return rc
 
 
-def fire_window(cmd):  
+def fire_window(cmd):
     '''fire a window feed me a build_window list'''
     subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
@@ -143,10 +143,11 @@ def main():
         fire_window(pm)
 
     '''the business end'''
-    if installer_there and plug_there:
-        if DEVenvironment is not True:
-            fire_window(ip.create)
-            run_command(catalina)
+    if installer_there and plug_there and DEVenvironment:
+        print(f'DEVenvironment: {DEVenvironment}. All clear, we would be upgrading this machine.')
+    if installer_there and plug_there and not DEVenvironment:
+        fire_window(ip.create)
+        run_command(catalina)
 
 
 if __name__ == "__main__":
