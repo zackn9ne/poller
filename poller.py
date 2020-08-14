@@ -10,6 +10,7 @@ import shlex
 import os.path
 import argparse
 import makewindow
+#todo argparse the target version
 
 # user vars
 catalina = ('/Applications/Install macOS Catalina.app/Contents/\
@@ -53,13 +54,13 @@ def get_args():
     parser.add_argument(
         "--dry-run", action="store_true", default=''
     )
+    parser.add_argument(
+        '-t', action='store', type=float, required=True
+    )
 
     args = parser.parse_args()
-    if args.dry_run:
-        print (f'results are: {args}')
-        DEVenvironment = True
-        print(f'dev environment is: {DEVenvironment}')
-        return DEVenvironment
+
+    return args
 
 def check_os_version(cmd):
     '''return current macos version'''
@@ -118,14 +119,23 @@ def fire_window(cmd):
 
 
 def main():
-    '''set DEVenvironment from command line arg'''
-    DEVenvironment = get_args()
+    '''return command line args'''
+    args = get_args()
+    print (f'args are {args.dry_run}')
+    if args.dry_run:
+       DEVenvironment = True
+    else:
+        DEVenvironment = False
+    target = str(args.t)
 
     '''check if we have to do anything'''
     os_version = check_os_version(osv)
-    if target in os_version:
+    if DEVenvironment and target in os_version:
+        exit(f'DEVenvironment: {DEVenvironment}. Popup would be: error user already upgraded current: {os_version}')
+
+    elif target in os_version:
         fire_window(uc.create())
-        exit(f'error user already upgraded: {os_version}')
+        exit(f'window fired: error user already upgraded: {os_version}')
 
     '''now do things'''
     installer_there = check_for_installer(catalina[0])
