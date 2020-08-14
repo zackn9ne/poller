@@ -10,7 +10,7 @@ import shlex
 import os.path
 import argparse
 import makewindow
-#todo argparse the target version
+
 
 # user vars
 catalina = ('/Applications/Install macOS Catalina.app/Contents/\
