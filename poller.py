@@ -37,10 +37,10 @@ press the button to acknowledge and try again shortly.',
     'Okay')
 ip = Mw(
     'update in progress',
-    '''We need you to hold on because a the installer is running.
+    '''We need you to hold on because the installer is running.
 
     Connect your changer and Work at your own risk a reboot is immintent.''',
-    'Read Me'
+    'Wait'
     )
 pm = Mw(
     'You are on battery',
