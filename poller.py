@@ -150,13 +150,13 @@ def main():
 
     '''power check'''
     if installer_there and not plug_there:
-        fire_window(pm)
+        fire_window(pm.create())
 
     '''the business end'''
     if installer_there and plug_there and DEVenvironment:
         print(f'DEVenvironment: {DEVenvironment}. All clear, we would be upgrading this machine.')
     if installer_there and plug_there and not DEVenvironment:
-        fire_window(ip.create)
+        fire_window(ip.create())
         run_command(catalina)
 
 
