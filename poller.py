@@ -28,7 +28,7 @@ Mw = makewindow.Make_Window
 uc = Mw(
     'All Set Here',
     (f'Your machine is already running {target[1]}. Thanks for checking!'),
-    'Great)'
+    'Great'
     )
 im = Mw(
     'installer missing',
