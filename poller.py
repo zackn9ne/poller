@@ -21,14 +21,14 @@ ls = ('ls', '-ltar')
 pwd = ('pwd')
 pmset = shlex.split('pmset -g batt')
 osv = shlex.split('sw_vers -productVersion')
-target = "10.14"
+target = ["10.14", "Catalina"]
 
 # use the makewindow module
 Mw = makewindow.Make_Window
 uc = Mw(
-    'acompleted',
-    'upgrade completed',
-    'great'
+    'All Set Here',
+    (f'Your machine is already running {target[1]}. Thanks for checking!'),
+    'Great)'
     )
 im = Mw(
     'installer missing',
