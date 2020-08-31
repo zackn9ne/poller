@@ -22,9 +22,16 @@ pwd = ('pwd')
 pmset = shlex.split('pmset -g batt')
 osv = shlex.split('sw_vers -productVersion')
 target = "10.14"
+can_i_run = shlex.split('pgrep startosinstall')
+stop = ''
 
 # use the makewindow module
 Mw = makewindow.Make_Window
+ar = Mw(
+    'sorry already running',
+    'Please be patient the updater is already running',
+    'great'
+    )
 uc = Mw(
     'acompleted',
     'upgrade completed',
@@ -62,7 +69,7 @@ def get_args():
 
     return args
 
-def check_os_version(cmd):
+def return_stdout_utf8_encoded(cmd):
     '''return current macos version'''
     data = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
@@ -77,11 +84,11 @@ def check_for_installer(cmd):
         return True
     else:
         # who cares about battery for this
-        print(f'{cmd}installer not found, running JSS command {catalina_lt_pkg}.')
+        #print(f'{cmd}installer not found, running JSS command {catalina_lt_pkg}.')
         return False
 
 
-def check_for_battery(cmd):
+def check_for_ac(cmd):
     '''is it on AC Power'''
     batt_output = run_regular(cmd)
     if 'AC Power' in batt_output:
@@ -118,46 +125,51 @@ def fire_window(cmd):
     subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
-def main():
-    '''return command line args'''
-    args = get_args()
-    print (f'args are {args.dry_run}')
-    if args.dry_run:
-       DEVenvironment = True
+
+
+def check_candidate(target):
+    os_version = return_stdout_utf8_encoded(osv)
+    if target in os_version:
+        return False
     else:
-        DEVenvironment = False
+        return True
+
+def eval_dry_run(args):
+     if args.dry_run:
+         return True
+     else:
+         return False
+
+def main():
+    args = get_args()
     target = str(args.t)
+    is_running = return_stdout_utf8_encoded(can_i_run)
+    
+    ac = check_for_ac(pmset)
+    pkg = check_for_installer(catalina[0])
+    vok = check_candidate(target)
+    dry = eval_dry_run(args)
+    etasks = ['ac', 'pkg', 'vok', 'dry']
+    tasks = [ac, pkg, vok, dry]
+    for p,i  in enumerate(tasks):
+        if not i:
+            print(f'error task {etasks[p]} is missing')
+            #break
+        else:
+            print('doin stuff')
+    # def error_window_maker():
+    #     if not vok: 
+    #         print('version is fine')
+    #         break
+    #     if not ac:
+    #         print('no charger')
+    #     if not pkg: 
+    #         print('no pkg')
+    #     else:
+    #         print('doing things')
 
-    '''check if we have to do anything'''
-    os_version = check_os_version(osv)
-    if DEVenvironment and target in os_version:
-        exit(f'DEVenvironment: {DEVenvironment}. Popup would be: error user already upgraded current: {os_version}')
 
-    elif target in os_version:
-        fire_window(uc.create())
-        exit(f'window fired: error user already upgraded: {os_version}')
-
-    '''now do things'''
-    installer_there = check_for_installer(catalina[0])
-    plug_there = check_for_battery(pmset)
-
-    '''installer check'''
-    if DEVenvironment and not installer_there:
-        print(f'DEVenvironment: {DEVenvironment}. Popup would be: installer missing')
-    if not DEVenvironment and not installer_there:
-        fire_window(im.create())
-        run_command(catalina_lt_pkg)
-
-    '''power check'''
-    if installer_there and not plug_there:
-        fire_window(pm.create())
-
-    '''the business end'''
-    if installer_there and plug_there and DEVenvironment:
-        print(f'DEVenvironment: {DEVenvironment}. All clear, we would be upgrading this machine.')
-    if installer_there and plug_there and not DEVenvironment:
-        fire_window(ip.create())
-        run_command(catalina)
+    error_window_maker()
 
 
 if __name__ == "__main__":
