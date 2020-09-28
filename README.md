@@ -1,4 +1,4 @@
-# poller a macOS Upgrader for use with JamfPro
+# poller. a macOS Upgrader for use with JamfPro
 # the good
 1. dosen't matter if users are admin
 2. makes sure they have at least 50% battery
