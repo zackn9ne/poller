@@ -23,7 +23,7 @@ pmset = shlex.split('pmset -g batt')
 osv = shlex.split('sw_vers -productVersion')
 target = ["10.14", "Catalina"]
 
-# use the makewindow module
+# window vars
 Mw = makewindow.Make_Window
 uc = Mw(
     'All Set Here',
@@ -43,10 +43,18 @@ ip = Mw(
     'Wait'
     )
 pm = Mw(
-    'You are on battery',
+    'Your battery is too low',
     '''Please connect a charger and rerun this program.''',
     'Close'
 )
+
+# funcs
+def run_in_shell(cmd):
+    '''main shell interactor'''
+    data = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT)
+    stdout, stderr = data.communicate()
+    return str(stdout)
 
 def get_args():
     '''cli args'''
@@ -81,22 +89,23 @@ def check_for_installer(cmd):
         return False
 
 
-def check_for_battery(cmd):
+def check_battery(cmd):
     '''is it on AC Power'''
-    batt_output = run_regular(cmd)
-    if 'AC Power' in batt_output:
+    batt_stdout = run_in_shell(cmd)
+    if 'AC Power' in batt_stdout:
         return True
     else:
-        print(f'battery check not passed: {batt_output}')
-        return False
+        print(f'on battery: {batt_stdout}')
+        
+        plaintxt_percent=batt_stdout.split(';')
+        plaintxt_percent=plaintxt_percent[0][-3:-1]
+        if int(plaintxt_percent) > 46:
+            print(f'battery good enough: {plaintxt_percent}')
+            return True            
+        else:
+            print(f'battery too low failing: {plaintxt_percent}')
+            return False
 
-
-def run_regular(cmd):
-    '''run a simple shell command'''
-    data = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT)
-    stdout, stderr = data.communicate()
-    return str(stdout)
 
 
 def run_command(cmd):
@@ -130,34 +139,43 @@ def main():
 
     '''check if we have to do anything'''
     os_version = check_os_version(osv)
-    if DEVenvironment and target in os_version:
-        exit(f'DEVenvironment: {DEVenvironment}. Popup would be: error user already upgraded current: {os_version}')
+    if target in os_version:
+        '''do silent things first'''
+        if DEVenvironment:
+            exit(f'DEVenvironment: {DEVenvironment}. Popup would be: error user already upgraded current: {os_version}')
+        else:
+            fire_window(uc.create())
+            exit(f'window fired: error user already upgraded: {os_version}')
 
-    elif target in os_version:
-        fire_window(uc.create())
-        exit(f'window fired: error user already upgraded: {os_version}')
-
-    '''now do things'''
+    '''if we do have to do things'''
     installer_there = check_for_installer(catalina[0])
-    plug_there = check_for_battery(pmset)
+    plug_there = check_battery(pmset)
 
     '''installer check'''
-    if DEVenvironment and not installer_there:
-        print(f'DEVenvironment: {DEVenvironment}. Popup would be: installer missing')
-    if not DEVenvironment and not installer_there:
-        fire_window(im.create())
-        run_command(catalina_lt_pkg)
+    if not installer_there:
+        if DEVenvironment:
+            exit(f'DEVenvironment: {DEVenvironment}. Popup would be: installer missing')
+        else:
+            fire_window(im.create())
+            run_command(catalina_lt_pkg)
+            exit(f'can"t find installer so running this jamf command: {catalina_lt_pkg}')
+
 
     '''power check'''
     if installer_there and not plug_there:
-        fire_window(pm.create())
+        if DEVenvironment:
+            exit(f'power too low giving up')
+        else:
+            fire_window(pm.create())
+            exit(f'power too low giving up')
 
     '''the business end'''
-    if installer_there and plug_there and DEVenvironment:
-        print(f'DEVenvironment: {DEVenvironment}. All clear, we would be upgrading this machine.')
-    if installer_there and plug_there and not DEVenvironment:
-        fire_window(ip.create())
-        run_command(catalina)
+    if installer_there and plug_there:
+        if DEVenvironment:
+            print(f'DEVenvironment: {DEVenvironment}. All clear, we would be upgrading this machine.')
+        else:
+            fire_window(ip.create())
+            run_command(catalina)
 
 
 if __name__ == "__main__":
