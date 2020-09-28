@@ -1,4 +1,4 @@
-# poller
+# poller a macOS Upgrader for use with JamfPro
 polls various conditions and then updates macOS from escallated user, feedback window from jamfHelper.app
 
 # usage
