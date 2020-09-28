@@ -1,5 +1,9 @@
 # poller a macOS Upgrader for use with JamfPro
-polls various conditions and then updates macOS from escallated user, feedback window from jamfHelper.app
+# the good
+1. dosen't matter if users are admin
+2. makes sure they have at least 50% battery
+3. provides a feedback window when all the things are happening
+4. low probabability of users messing this up
 
 # usage
 1. create a distributable python
