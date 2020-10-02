@@ -1,6 +1,6 @@
 # poller. a macOS Upgrader for use with JamfPro
 
-[![poller](https://github.com/zackn9ne/poller/raw/master/zackn9ne/img/swag.gif)](https://github.com/zackn9ne)
+[![poller](https://github.com/zackn9ne/poller/blob/master/img/demo.gif)](https://github.com/zackn9ne)
 
 
 # the good
