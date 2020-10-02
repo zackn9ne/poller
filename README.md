@@ -2,6 +2,12 @@
 
 [![poller](https://github.com/zackn9ne/poller/blob/master/img/demo.gif)](https://github.com/zackn9ne)
 
+# flags
+```
+--dry-run runs without pop-ups and doesn't do anything
+-t target eg 10.15
+-i interactive mode, provides a choice about installing instead of just doing it
+```
 
 # the good
 1. dosen't matter if users are admin
@@ -14,9 +20,3 @@
 2. get the diistributable python and this script on the end user computer
 3. run things: `/opt/companyname/python3.7 /opt/companyname/poller/poller.py -t 10.15`
 
-# flags
-```
---dry-run runs without popus and doesn't do anything
--t target eg 10.15
--i interactive mode, provides a choice about installing instead of just doing it
-```
