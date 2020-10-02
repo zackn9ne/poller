@@ -1,8 +1,11 @@
 #!/opt/advisory/python3.7
 # windows
-class Make_Window():
+import settings
 
-    def __init__(self,bar,content,button):
+class Make_Window():
+    def __init__(self,bar,content,button, button2=''):
+        '''this just tees up a dict'''
+ 
         self.window = { 
             'app': '''/Library/Application Support/JAMF/bin/\
 jamfHelper.app/Contents/MacOS/jamfHelper''',
@@ -19,14 +22,20 @@ jamfHelper.app/Contents/MacOS/jamfHelper''',
             'cmd6': '-button1',
             'button': button
         } 
+        if button2:
+            self.window['cmd7'] = '-button2'
+            self.window['button2'] = button2
+                   
 
     def create(self):
-        '''internal function'''
+        '''this creates the completed dict'''
         self.windowz = []
         #print(self.window['app'])
         for k, v in self.window.items():
             #print(k, v)
             #windowz.append(k)
             self.windowz.append(v)
-        print(f"creating window command: {self.windowz}")
+        if settings.DEVenvironment:
+            print(f"DEVenvironment: creating window command: {self.windowz}")
+    
         return self.windowz

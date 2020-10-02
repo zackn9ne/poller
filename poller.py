@@ -8,174 +8,228 @@
 import subprocess
 import shlex
 import os.path
-import argparse
 import makewindow
+import datetime
+import settings
+
+
+# prog vars
+logfile = '/tmp/.poller-log'
+def make_log_file(where):
+    if os.path.exists(where):
+        #do a thing
+        with open(where, mode='a') as file:
+            file.write(f'Refusal log recorded at {datetime.datetime.now()}\n')
+    else:
+        with open(where, mode='a') as file:
+            file.write(f'Refusal log recorded at {datetime.datetime.now()}\n')
+
+ 
+def count_lines(where):
+    lines = 0
+    where = open(where, "r")
+    for line in where:
+        line = line.strip("\n")
+        lines += 1
+    return(lines)
 
 
 # user vars
-catalina = ('/Applications/Install macOS Catalina.app/Contents/\
+catalina_installer = '/Applications/Install macOS Catalina.app/Contents/\
+Resources/startosinstall'
+catalina_install_cmd = ('/Applications/Install macOS Catalina.app/Contents/\
 Resources/startosinstall', '--agreetolicense', '--forcequitapps')
-safari = ('open', '-a', 'Safari.app')
-catalina_lt_pkg = ('jamf', 'policy', '-event', 'install-catalina-lt')
-ls = ('ls', '-ltar')
-pwd = ('pwd')
-pmset = shlex.split('pmset -g batt')
-osv = shlex.split('sw_vers -productVersion')
-target = ["10.14", "Catalina"]
+threshold = 50
 
-# window vars
-Mw = makewindow.Make_Window
-uc = Mw(
-    'All Set Here',
-    (f'Your machine is already running {target[1]}. Thanks for checking!'),
-    'Great'
-    )
-im = Mw(
-    'installer missing',
-    'We need to run a management action to prepare your computer \
-press the button to acknowledge and try again shortly.',
-    'Okay')
-ip = Mw(
-    'update in progress',
-    '''We need you to hold on because the installer is running.
 
-Connect your changer and Work at your own risk a reboot is immintent.''',
-    'Dismiss'
-    )
-pm = Mw(
-    'Your battery is too low',
-    '''Please connect a charger and rerun this program.''',
-    'Close'
-)
-
+class Poller():
 # funcs
-def run_in_shell(cmd):
-    '''main shell interactor'''
-    data = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT)
-    stdout, stderr = data.communicate()
-    return str(stdout)
-
-def get_args():
-    '''cli args'''
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--dry-run", action="store_true", default=''
-    )
-    parser.add_argument(
-        '-t', action='store', type=float, required=True
-    )
-
-    args = parser.parse_args()
-
-    return args
-
-def check_os_version(cmd):
-    '''return current macos version'''
-    data = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT)
-    stdout, stderr = data.communicate()
-    formatted_float = stdout.decode("utf-8")
-    return formatted_float
+    def cmd_to_stdout(self, cmd):
+        '''main shell interactor'''
+        data = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT)
+        stdout, stderr = data.communicate()
+        return str(stdout)
 
 
-def check_for_installer(cmd):
-    '''is os upgrade installer on disk'''
-    if os.path.isfile(cmd):
-        return True
-    else:
-        # who cares about battery for this
-        print(f'{cmd}installer not found, running JSS command {catalina_lt_pkg}.')
-        return False
+    def cmd_to_utf8(self, cmd):
+        '''return current macos version'''
+        data = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT)
+        stdout, stderr = data.communicate()
+        formatted_float = stdout.decode("utf-8")
+        return formatted_float
 
 
-def check_battery(cmd):
-    '''is it on AC Power'''
-    batt_stdout = run_in_shell(cmd)
-    if 'AC Power' in batt_stdout:
-        return True
-    else:
-        print(f'on battery: {batt_stdout}')
-        
-        plaintxt_percent=batt_stdout.split(';')
-        plaintxt_percent=plaintxt_percent[0][-3:-1]
-        if int(plaintxt_percent) > 46:
-            print(f'battery good enough: {plaintxt_percent}')
-            return True            
+    def while_cmd(self, cmd):
+        '''run a shell command with a while loop'''
+        breakpoint()
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+
+        while True:
+            output = process.stdout.readline()
+            if output == '' and process.poll() is not None:
+                break
+            if output:
+                print(output.strip())
+        rc = process.poll()
+        return rc
+
+
+    def check_for_file(self, cmd):
+        '''is os upgrade installer on disk'''
+        if os.path.isfile(cmd):
+            return True
         else:
-            print(f'battery too low failing: {plaintxt_percent}')
+            # who cares about battery for this
+            print(f'{cmd} not found')
             return False
 
 
+    def check_battery(self):
+        '''return battery info'''
+        pmset = shlex.split('pmset -g batt')        
+        batt_stdout = self.cmd_to_stdout(pmset)
+        if 'AC Power' in batt_stdout:
+            return True
+        else:
+            print(f'on battery: {batt_stdout}')
+            
+            plaintxt_percent=batt_stdout.split(';')
+            plaintxt_percent=plaintxt_percent[0][-3:-1]
+            if int(plaintxt_percent) > threshold:
+                print(f'battery good enough: {plaintxt_percent}')
+                return True            
+            else:
+                print(f'battery too low failing: {plaintxt_percent}')
+                return False
 
-def run_command(cmd):
-    '''run a shell command with a while loop'''
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
 
-    while True:
-        output = process.stdout.readline()
-        if output == '' and process.poll() is not None:
-            break
-        if output:
-            print(output.strip())
-    rc = process.poll()
-    return rc
+    def fire_window(self, cmd):
+        '''fire a window feed me a build_window list'''
 
+        global user_agrees
+        user_agrees = ''
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = proc.communicate()
+        if proc.returncode == 0:
+            if settings.DEVenvironment:
+                print('user clicked 0')
+            user_agrees = True
+        elif proc.returncode == 2:
+            if settings.DEVenvironment:
+                print('user clicked 2')
+            user_agrees = False
+        else:
+            print(f"Error: {err}")
 
-def fire_window(cmd):
-    '''fire a window feed me a build_window list'''
-    subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-
+            
 def main():
-    '''return command line args'''
-    args = get_args()
-    print (f'args are {args.dry_run}')
-    if args.dry_run:
-       DEVenvironment = True
+    '''main'''
+    make_log_file(logfile)
+    count_lines(logfile)
+
+    # if lines > 10:
+    #     '''run the program'''
+    settings.init()    
+    p = Poller()
+
+    '''get the classes ready'''
+    Mw = makewindow.Make_Window
+    uc = Mw(
+        'All Set Here',
+        (f'Your machine is already running {settings.target}. Thanks for checking!'),
+        'Great'
+        # ,button2="rad"
+        )
+    im = Mw(
+        'installer missing',
+        'Please contact support@advisory.nyc and tell them you are trying to update macOS but the installer is missing.',
+        'Okay')
+    if count_lines(logfile) < 200:
+        choices = Mw(
+            'Get Ready To Update',
+            (f'Your machine is about to update to macOS {settings.target}. You will be offline for about a 20 minute portion of the update. You have {100 - count_lines(logfile)} tries left.'),
+            'Proceed',
+            button2="Remind Me"
+            )
     else:
-        DEVenvironment = False
-    target = str(args.t)
+        choices = Mw(
+            'Get Ready To Update',
+            (f'Your machine is about to update to macOS {settings.target}. You will be offline for about a 20 minute portion of the update. You have {count_lines(logfile)} exceeded the max tries of 100.'),
+            'Proceed')   
+    ip = Mw(
+        'update in progress',
+        '''We need you to hold on because the installer is running.
+
+Connect your changer and Work at your own risk a reboot is immintent.''',
+        'Dismiss'
+        )
+    pm = Mw(
+        'Your battery is too low',
+        '''Please connect a charger and rerun this program.''',
+        'Try Now',
+        button2="Give up"
+    )
 
     '''check if we have to do anything'''
-    os_version = check_os_version(osv)
-    if target in os_version:
+    os_version = p.cmd_to_utf8(shlex.split('sw_vers -productVersion'))
+
+    if settings.target in os_version:
         '''do silent things first'''
-        if DEVenvironment:
-            exit(f'DEVenvironment: {DEVenvironment}. Popup would be: error user already upgraded current: {os_version}')
+        if settings.DEVenvironment:
+            exit(f'DEVenvironment: {settings.DEVenvironment}. Popup would be: error user already upgraded current: {os_version}')
         else:
-            fire_window(uc.create())
-            exit(f'window fired: error user already upgraded: {os_version}')
+            p.fire_window(uc.create())
+            if user_agrees:
+                exit(f'window fired: error user already upgraded: {os_version}')
+            else:
+                #todo start a log session because the user declined
+                print('was false')
 
     '''if we do have to do things'''
-    installer_there = check_for_installer(catalina[0])
-    plug_there = check_battery(pmset)
 
     '''installer check'''
-    if not installer_there:
-        if DEVenvironment:
+    if not p.check_for_file(catalina_installer):
+        if settings.DEVenvironment:
             exit(f'DEVenvironment: {DEVenvironment}. Popup would be: installer missing')
         else:
-            fire_window(im.create())
-            run_command(catalina_lt_pkg)
-            exit(f'can"t find installer so running this jamf command: {catalina_lt_pkg}')
+            p.fire_window(im.create())
+            exit(f'can"t find installer')
 
 
     '''power check'''
-    if installer_there and not plug_there:
-        if DEVenvironment:
+    if p.check_for_file(catalina_installer) and not p.check_battery():
+        if settings.DEVenvironment:
             exit(f'power too low giving up')
         else:
-            fire_window(pm.create())
-            exit(f'power too low giving up')
+            p.fire_window(pm.create())
+            if user_agrees:
+                #rerun program
+                main()
+            else:
+                exit(f'power too and user gave up')
 
     '''the business end'''
-    if installer_there and plug_there:
-        if DEVenvironment:
-            print(f'DEVenvironment: {DEVenvironment}. All clear, we would be upgrading this machine.')
+    if p.check_for_file(catalina_installer) and p.check_battery():
+        if settings.interactive:
+            if settings.DEVenvironment:            
+                print('interactive mode windows would ask them')
+            else:
+                p.fire_window(choices.create())
+                if user_agrees:
+                        p.fire_window(ip.create())
+                        p.while_cmd(catalina_install_cmd)
+                        print(f'upgrade in progress')
+                else:
+                    #todo start a log session because the user declined
+                    print('user bailed')
         else:
-            fire_window(ip.create())
-            run_command(catalina)
+            if settings.DEVenvironment:
+                print('non interactive we would upgrade you')
+            else:
+                p.fire_window(ip.create())
+                p.while_cmd(catalina_install_cmd)
 
 
 if __name__ == "__main__":
