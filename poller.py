@@ -209,11 +209,12 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
             else:
                 exit(f'power too and user gave up')
 
-    '''the business end'''
+    
     if p.check_for_file(catalina_installer) and p.check_battery():
+        '''passed checks'''
         if settings.interactive:
             if settings.DEVenvironment:            
-                print('interactive mode windows would ask them')
+                print('passed all checks, popups would follow')
             else:
                 p.fire_window(choices.create())
                 if user_agrees:
