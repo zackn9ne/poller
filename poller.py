@@ -63,7 +63,6 @@ class Poller():
 
     def while_cmd(self, cmd):
         '''run a shell command with a while loop'''
-        breakpoint()
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
 
         while True:
@@ -149,8 +148,8 @@ def main():
     if count_lines(logfile) < 200:
         choices = Mw(
             'Get Ready To Update',
-            (f'Your machine is about to update to macOS {settings.target}. You will be offline for about a 20 minute portion of the update. You have {100 - count_lines(logfile)} tries left.'),
-            'Proceed',
+            (f'To update to macOS {settings.target} click Begin. You will be offline for about a 20 minutes during the update. You have {100 - count_lines(logfile)} tries left.'),
+            'Begin',
             button2="Remind Me"
             )
     else:
