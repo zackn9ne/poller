@@ -88,14 +88,22 @@ class Poller():
 
     def check_battery(self):
         '''return battery info'''
+        global battery_levels
         pmset = shlex.split('pmset -g batt')        
         batt_stdout = self.cmd_to_stdout(pmset)
+        if settings.DEVenvironment:
+            print(f'Battery info is: {batt_stdout}')
+
         if 'AC Power' in batt_stdout:
+            battery_levels = 'AC Power'
             return True
         else:
-            print(f'on battery: {batt_stdout}')
+            battery_levels = batt_stdout
             
             plaintxt_percent=batt_stdout.split(';')
+            if int(plaintxt_percent[-4:-1]) == 100:
+                print(f'battery is 100% edge case')
+                return True
             plaintxt_percent=plaintxt_percent[0][-3:-1]
             if int(plaintxt_percent) > threshold:
                 print(f'battery good enough: {plaintxt_percent}')
@@ -125,21 +133,27 @@ class Poller():
 
             
 def main():
-    '''main'''
+    '''log'''
     make_log_file(logfile)
+    '''gather info'''
     count_lines(logfile)
-    print(f'welcome to poller {settings.version} deferals at {count_lines(logfile)}')
-
-
     settings.init()    
     p = Poller()
+    p.check_battery()
+    os_version = p.cmd_to_utf8(shlex.split('sw_vers -productVersion')).strip()
+    #battery_levels = p.check_battery().battery_levels
+    print(f'welcome to poller {settings.version} deferals at {count_lines(logfile)} system at {os_version} on {battery_levels} target at {settings.target}')
+
+
+
+
 
     '''get the classes ready'''
     Mw = makewindow.Make_Window
     uc = Mw(
         'hud',
         'All Set Here',
-        (f'Your machine is already running {settings.target}. Thanks for checking!'),
+        (f'Your machine is already running {os_version}minimum required is: {settings.target}. Thanks for checking!'),
         'Great'
         # ,button2="rad"
         )
@@ -177,9 +191,21 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
         'Try Now',
         button2="Give up"
     )
+    bye = Mw(
+        'hud',
+        'macOS too old',
+        '''Sorry your macOS is over 3 years old you will need a support technician to assit you. Simply email support@advisory.nyc Now to get started, and mention you need help updating.''',
+        'Try Now',
+        button2="Give up"
+    )
 
-    '''check if we have to do anything'''
-    os_version = p.cmd_to_utf8(shlex.split('sw_vers -productVersion'))
+    if str(os_version) < str(10.14):
+        if settings.DEVenvironment:
+            exit(f'DEVenvironment: {settings.DEVenvironment}. Popup would be: pre 10.14 system {os_version}')
+        else:
+            p.fire_window(bye.create())
+            exit(f'OS too old.')
+
 
     if settings.target in os_version:
         '''do silent things first'''
@@ -196,7 +222,7 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
                 #exit just in case you gave them a two  button
 
 
-    '''if we do have to do things'''
+    '''if we made it here we have to do things'''
 
     '''installer check'''
     if not p.check_for_file(catalina_installer):
