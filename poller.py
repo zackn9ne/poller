@@ -40,6 +40,7 @@ Resources/startosinstall'
 catalina_install_cmd = ('/Applications/Install macOS Catalina.app/Contents/\
 Resources/startosinstall', '--agreetolicense', '--forcequitapps')
 threshold = 50
+chances = 15
 
 
 class Poller():
@@ -128,36 +129,40 @@ def main():
     make_log_file(logfile)
     count_lines(logfile)
 
-    # if lines > 10:
-    #     '''run the program'''
+
     settings.init()    
     p = Poller()
 
     '''get the classes ready'''
     Mw = makewindow.Make_Window
     uc = Mw(
+        'hud',
         'All Set Here',
         (f'Your machine is already running {settings.target}. Thanks for checking!'),
         'Great'
         # ,button2="rad"
         )
     im = Mw(
+        'hud',
         'installer missing',
         'Please contact support@advisory.nyc and tell them you are trying to update macOS but the installer is missing.',
         'Okay')
-    if count_lines(logfile) < 200:
-        choices = Mw(
+    if count_lines(logfile) < chances:
+        gatekeeper = Mw(
+            'utility',
             'Get Ready To Update',
-            (f'To update to macOS {settings.target} click Begin. You will be offline for about a 20 minutes during the update. You have {100 - count_lines(logfile)} tries left.'),
+            (f'To update to macOS {settings.target} click Begin. You will be offline for about a 20 minutes during the update. You have {chances - count_lines(logfile)} tries left.'),
             'Begin',
             button2="Remind Me"
             )
     else:
-        choices = Mw(
+        gatekeeper = Mw(
+            'utility',
             'Get Ready To Update',
-            (f'Your machine is about to update to macOS {settings.target}. You will be offline for about a 20 minute portion of the update. You have {count_lines(logfile)} exceeded the max tries of 100.'),
+            (f'Your machine is about to update to macOS {settings.target}. You will be offline for about a 20 minute portion of the update. You posponed {count_lines(logfile)} times and exceeded the max tries of {chances}.'),
             'Proceed')   
     ip = Mw(
+        'hud',
         'update in progress',
         '''We need you to hold on because the installer is running.
 
@@ -165,8 +170,9 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
         'Dismiss'
         )
     pm = Mw(
-        'Your battery is too low',
-        '''Please connect a charger and rerun this program.''',
+        'utility',
+        'We want to update macOS but your battery is too low.',
+        '''Simply connect a charger and click Try Now to start updating.''',
         'Try Now',
         button2="Give up"
     )
@@ -181,10 +187,13 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
         else:
             p.fire_window(uc.create())
             if user_agrees:
-                exit(f'window fired: error user already upgraded: {os_version}')
+                exit(f'window fired: error user already upgraded: \
+                current mac version {os_version}/{settings.target}')
             else:
-                #todo start a log session because the user declined
-                print('was false')
+                exit(f'window fired: error user already upgraded: \
+                current mac version {os_version}/{settings.target}')                
+                #exit just in case you gave them a two  button
+
 
     '''if we do have to do things'''
 
@@ -216,7 +225,7 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
             if settings.DEVenvironment:            
                 print('passed all checks, popups would follow')
             else:
-                p.fire_window(choices.create())
+                p.fire_window(gatekeeper.create())
                 if user_agrees:
                         p.fire_window(ip.create())
                         p.while_cmd(catalina_install_cmd)

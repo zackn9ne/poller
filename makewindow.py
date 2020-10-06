@@ -3,14 +3,14 @@
 import settings
 
 class Make_Window():
-    def __init__(self,bar,content,button, button2=''):
+    def __init__(self,ux,bar,content,button, button2=''):
         '''this just tees up a dict'''
  
         self.window = { 
             'app': '''/Library/Application Support/JAMF/bin/\
 jamfHelper.app/Contents/MacOS/jamfHelper''',
             'cmd1': '-windowType',
-            'type': 'hud',
+            'type': ux,
             'cmd2':   '-title',
             'title': bar,
             'cmd3': '-description',
