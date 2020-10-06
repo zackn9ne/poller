@@ -1,5 +1,7 @@
 import argparse
 
+version = 1.11
+
 def get_args():
     '''cli args'''
     parser = argparse.ArgumentParser()

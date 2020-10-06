@@ -128,6 +128,7 @@ def main():
     '''main'''
     make_log_file(logfile)
     count_lines(logfile)
+    print(f'welcome to poller {settings.version} deferals at {count_lines(logfile)}')
 
 
     settings.init()    
