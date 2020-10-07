@@ -16,8 +16,12 @@ import re
 # prog vars
 logfile = '/tmp/.poller-log'
 def make_log_file(where):
+    if not os.path.exists(where):
+        with open(where, 'w') as fp: 
+            pass
+        
+def opted_out(where):
     if os.path.exists(where):
-        #do a thing
         with open(where, mode='a') as file:
             file.write(f'Refusal log recorded at {datetime.datetime.now()}\n')
     else:
@@ -236,7 +240,8 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
                 #rerun program
                 main()
             else:
-                exit(f'power too and user gave up')
+                opted_out(logfile)
+                exit(f'power too low user refused to find charger')
 
     
     if p.check_for_file(catalina_installer) and p.check_battery():
@@ -253,6 +258,7 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
                 else:
                     #todo start a log session because the user declined
                     print('user bailed')
+                    opted_out(logfile)
         else:
             if settings.DEVenvironment:
                 print('non interactive we would upgrade you')
