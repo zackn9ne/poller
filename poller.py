@@ -11,7 +11,7 @@ import os.path
 import makewindow
 import datetime
 import settings
-
+import re
 
 # prog vars
 logfile = '/tmp/.poller-log'
@@ -88,28 +88,25 @@ class Poller():
 
     def check_battery(self):
         '''return battery info'''
-        global battery_levels
+        global pct
         pmset = shlex.split('pmset -g batt')        
-        batt_stdout = self.cmd_to_stdout(pmset)
+        pmset = self.cmd_to_stdout(pmset)
         if settings.DEVenvironment:
-            print(f'Battery info is: {batt_stdout}')
+            print(f'Battery info is: {pmset}')
 
-        if 'AC Power' in batt_stdout:
-            battery_levels = 'AC Power'
+        pct=pmset.split(';')
+        pct = re.search("\\d+(?:\\.\\d+)?%", str(pct))
+        pct = pct.group()
+        pct = int(pct[:-1])            
+
+        if 'AC Power' in pmset:
+            pct = (f'AC Power {pct}%')
             return True
         else:
-            battery_levels = batt_stdout
-            
-            plaintxt_percent=batt_stdout.split(';')
-            if int(plaintxt_percent[0][-4:-1]) == 100:
-                print(f'battery is 100% edge case')
+            if pct > threshold:
                 return True
-            plaintxt_percent=plaintxt_percent[0][-3:-1]
-            if int(plaintxt_percent) > threshold:
-                print(f'battery good enough: {plaintxt_percent}')
-                return True            
+       
             else:
-                print(f'battery too low failing: {plaintxt_percent}')
                 return False
 
 
@@ -133,23 +130,13 @@ class Poller():
 
             
 def main():
-    '''log'''
-    make_log_file(logfile)
-    '''gather info'''
-    count_lines(logfile)
-    settings.init()    
-    p = Poller()
-    p.check_battery()
-    os_version = p.cmd_to_utf8(shlex.split('sw_vers -productVersion')).strip()
-    #battery_levels = p.check_battery().battery_levels
-    print(f'welcome to poller {settings.version} deferals at {count_lines(logfile)} system at {os_version} on {battery_levels} target at {settings.target}')
-
-
-
-
-
     '''get the classes ready'''
+    p = Poller()
     Mw = makewindow.Make_Window
+    settings.init()        
+    '''get osversion very early'''
+    os_version = p.cmd_to_utf8(shlex.split('sw_vers -productVersion')).strip()    
+    '''make windows'''
     uc = Mw(
         'hud',
         'All Set Here',
@@ -199,12 +186,25 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
         button2="Give up"
     )
 
+    '''kick out ancient macos'''
     if str(os_version) < str(10.14):
         if settings.DEVenvironment:
             exit(f'DEVenvironment: {settings.DEVenvironment}. Popup would be: pre 10.14 system {os_version}')
         else:
             p.fire_window(bye.create())
-            exit(f'OS too old.')
+            exit(f'OS too old. {os_version} exiting.')
+
+    '''proceed'''
+    make_log_file(logfile)
+    '''gather info'''
+    count_lines(logfile)
+
+
+    p.check_battery()
+
+    #battery_levels = p.check_battery().battery_levels
+    print(f'welcome to poller {settings.version} deferals at {count_lines(logfile)}/{chances} system at {os_version} on {pct}% target at {settings.target}')
+
 
 
     if settings.target in os_version:
