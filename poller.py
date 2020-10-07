@@ -195,10 +195,10 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
     '''kick out ancient macos'''
     if str(os_version) < str(10.14):
         if settings.DEVenvironment:
-            exit(f'DEVenvironment: {settings.DEVenvironment}. Popup would be: pre 10.14 system {os_version}')
+            exit(f'dev: Popup would be: pre 10.14 system {os_version}')
         else:
             p.fire_window(bye.create())
-            exit(f'OS too old. {os_version} exiting.')
+            exit(f'game over: OS too old window shown. {os_version} exiting.')
 
     '''gather the rest'''
     p.check_battery()
@@ -207,14 +207,14 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
     if settings.target in os_version:
         '''do silent things first'''
         if settings.DEVenvironment:
-            exit(f'DEVenvironment: {settings.DEVenvironment}. Popup would be: error user already upgraded current: {os_version}')
+            exit(f'dev: popup: error user already upgraded current: {os_version}')
         else:
             p.fire_window(uc.create())
             if user_agrees:
-                exit(f'window fired: error user already upgraded: \
+                exit(f'game over: window fired: error user already upgraded: \
                 current mac version {os_version}/{settings.target}')
             else:
-                exit(f'window fired: error user already upgraded: \
+                exit(f'game over: window fired: error user already upgraded: \
                 current mac version {os_version}/{settings.target}')                
                 #exit just in case you gave them a two  button
 
@@ -224,16 +224,16 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
     '''installer check'''
     if not p.check_for_file(catalina_installer):
         if settings.DEVenvironment:
-            exit(f'DEVenvironment: {DEVenvironment}. Popup would be: installer missing')
+            exit(f'dev: popup: installer missing')
         else:
             p.fire_window(im.create())
-            exit(f'can"t find installer')
+            exit(f'game over: can"t find installer')
 
 
     '''power check'''
     if p.check_for_file(catalina_installer) and not p.check_battery():
         if settings.DEVenvironment:
-            exit(f'power too low giving up')
+            exit(f'dev: popup: power too low choices to fix given')
         else:
             p.fire_window(pm.create())
             if user_agrees:
@@ -241,27 +241,27 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
                 main()
             else:
                 opted_out(logfile)
-                exit(f'power too low user refused to find charger')
+                exit(f'-1 hp: power too low user refused to find charger')
 
     
     if p.check_for_file(catalina_installer) and p.check_battery():
         '''passed checks'''
         if settings.interactive:
             if settings.DEVenvironment:            
-                print('passed all checks, popups would follow')
+                print('dev: boss level: popups would follow')
             else:
                 p.fire_window(gatekeeper.create())
                 if user_agrees:
                         p.fire_window(ip.create())
                         p.while_cmd(catalina_install_cmd)
-                        print(f'upgrade in progress')
+                        print(f'boss level: user agreed to slay boss')
                 else:
                     #todo start a log session because the user declined
-                    print('user bailed')
+                    print('-1 hp: user bailed')
                     opted_out(logfile)
         else:
             if settings.DEVenvironment:
-                print('non interactive we would upgrade you')
+                print('boss level: silently upgrade you')
             else:
                 p.fire_window(ip.create())
                 p.while_cmd(catalina_install_cmd)
