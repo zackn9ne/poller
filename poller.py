@@ -101,7 +101,7 @@ class Poller():
             battery_levels = batt_stdout
             
             plaintxt_percent=batt_stdout.split(';')
-            if int(plaintxt_percent[-4:-1]) == 100:
+            if int(plaintxt_percent[0][-4:-1]) == 100:
                 print(f'battery is 100% edge case')
                 return True
             plaintxt_percent=plaintxt_percent[0][-3:-1]
