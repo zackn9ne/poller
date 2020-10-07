@@ -134,8 +134,10 @@ def main():
     p = Poller()
     Mw = makewindow.Make_Window
     settings.init()        
-    '''get osversion very early'''
-    os_version = p.cmd_to_utf8(shlex.split('sw_vers -productVersion')).strip()    
+    '''gather info'''
+    os_version = p.cmd_to_utf8(shlex.split('sw_vers -productVersion')).strip()
+    make_log_file(logfile)
+    count_lines(logfile)    
     '''make windows'''
     uc = Mw(
         'hud',
@@ -194,18 +196,9 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
             p.fire_window(bye.create())
             exit(f'OS too old. {os_version} exiting.')
 
-    '''proceed'''
-    make_log_file(logfile)
-    '''gather info'''
-    count_lines(logfile)
-
-
+    '''gather the rest'''
     p.check_battery()
-
-    #battery_levels = p.check_battery().battery_levels
     print(f'welcome to poller {settings.version} deferals at {count_lines(logfile)}/{chances} system at {os_version} on {pct}% target at {settings.target}')
-
-
 
     if settings.target in os_version:
         '''do silent things first'''
