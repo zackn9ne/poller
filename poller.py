@@ -25,6 +25,7 @@ def opted_out(where):
         with open(where, mode='a') as file:
             file.write(f'Refusal log recorded at {datetime.datetime.now()}\n')
     else:
+        #in case file wasn't made
         with open(where, mode='a') as file:
             file.write(f'Refusal log recorded at {datetime.datetime.now()}\n')
 
@@ -80,7 +81,7 @@ class Poller():
         return rc
 
 
-    def check_for_file(self, cmd):
+    def check_for_installer(self, cmd):
         '''is os upgrade installer on disk'''
         if os.path.isfile(cmd):
             return True
@@ -104,7 +105,7 @@ class Poller():
         pct = int(pct[:-1])            
 
         if 'AC Power' in pmset:
-            pct = (f'AC Power {pct}%')
+            pct = (f'AC Power {pct}')
             return True
         else:
             if pct > threshold:
@@ -187,7 +188,9 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
     bye = Mw(
         'hud',
         'macOS too old',
-        '''Sorry your macOS is over 3 years old you will need a support technician to assit you. Simply email support@advisory.nyc Now to get started, and mention you need help updating.''',
+        '''Sorry your macOS is over 3 years old. You will need a \
+support technician to assist you. Simply email \
+support@advisory.nyc to get started, and mention you need help updating.''',
         'Try Now',
         button2="Give up"
     )
@@ -222,7 +225,7 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
     '''if we made it here we have to do things'''
 
     '''installer check'''
-    if not p.check_for_file(catalina_installer):
+    if not p.check_for_installer(catalina_installer):
         if settings.DEVenvironment:
             exit(f'dev: popup: installer missing')
         else:
@@ -231,7 +234,7 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
 
 
     '''power check'''
-    if p.check_for_file(catalina_installer) and not p.check_battery():
+    if p.check_for_installer(catalina_installer) and not p.check_battery():
         if settings.DEVenvironment:
             exit(f'dev: popup: power too low choices to fix given')
         else:
@@ -244,7 +247,7 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
                 exit(f'-1 hp: power too low user refused to find charger')
 
     
-    if p.check_for_file(catalina_installer) and p.check_battery():
+    if p.check_for_installer(catalina_installer) and p.check_battery():
         '''passed checks'''
         if settings.interactive:
             if settings.DEVenvironment:            
