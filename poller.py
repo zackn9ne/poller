@@ -188,11 +188,13 @@ Connect your changer and Work at your own risk a reboot is immintent.''',
     bye = Mw(
         'hud',
         'macOS too old',
-        '''Sorry your macOS is over 3 years old. You will need a \
-support technician to assist you. Simply email \
-support@advisory.nyc to get started, and mention you need help updating.''',
+        '''Due to the current version of your operating system, \
+we recommend that you first reach out to helpdesk \
+to have an engineer assist in preparing your computer \
+for the upgrade. Please email support@advisory.nyc at \
+your earliest convenience. Thank you.''',
         'Try Now',
-        button2="Give up"
+        button2="Later"
     )
 
     '''kick out ancient macos'''
