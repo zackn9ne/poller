@@ -175,7 +175,7 @@ def main():
         'update in progress',
         '''We need you to hold on because the installer is running.
 
-Connect your changer and Work at your own risk a reboot is immintent.''',
+Connect your changer and Work at your own risk a reboot is imminent.''',
         'Dismiss'
         )
     pm = Mw(
