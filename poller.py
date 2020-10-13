@@ -154,7 +154,7 @@ def main():
     im = Mw(
         'hud',
         'installer missing',
-        'Please contact support@advisory.nyc and tell them you are trying to update macOS but the installer is missing.',
+        'Please contact support and tell them you are trying to update macOS but the installer is missing.',
         'Okay')
     if count_lines(logfile) < chances:
         gatekeeper = Mw(
