@@ -4,6 +4,7 @@
 
 # flags
 ```
+/path/to/poller.py
 --dry-run runs without pop-ups and doesn't do anything
 -t target eg 10.15
 -i interactive mode, provides a choice about installing instead of just doing it
