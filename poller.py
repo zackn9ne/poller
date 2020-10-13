@@ -14,6 +14,7 @@ import settings
 import re
 
 # prog vars
+support = 'support@company.com'
 logfile = '/tmp/.poller-log'
 def make_log_file(where):
     if not os.path.exists(where):
@@ -154,7 +155,7 @@ def main():
     im = Mw(
         'hud',
         'installer missing',
-        'Please contact support and tell them you are trying to update macOS but the installer is missing.',
+        (f'Please contact {support} and tell them you are trying to update macOS but the installer is missing.'),
         'Okay')
     if count_lines(logfile) < chances:
         gatekeeper = Mw(
@@ -188,11 +189,11 @@ Connect your changer and Work at your own risk a reboot is imminent.''',
     bye = Mw(
         'hud',
         'macOS too old',
-        '''Due to the current version of your operating system, \
+        (f'''Due to the current version of your operating system, \
 we recommend that you first reach out to helpdesk \
 to have an engineer assist in preparing your computer \
-for the upgrade. Please email support@advisory.nyc at \
-your earliest convenience. Thank you.''',
+for the upgrade. Please email {support} at \
+your earliest convenience. Thank you.'''),
         'Try Now',
         button2="Later"
     )
