@@ -160,7 +160,7 @@ def main():
         gatekeeper = Mw(
             'utility',
             'Get Ready To Update',
-            (f'To update to macOS {settings.target} click Begin. You will be offline for about a 20 minutes during the update. You have {chances - count_lines(logfile)} tries left.'),
+            (f'To update to macOS {settings.target} click Begin. You will be offline for about 20 minutes during the update. You have {chances - count_lines(logfile)} tries left.'),
             'Begin',
             button2="Remind Me"
             )
@@ -168,7 +168,7 @@ def main():
         gatekeeper = Mw(
             'utility',
             'Get Ready To Update',
-            (f'Your machine is about to update to macOS {settings.target}. You will be offline for about a 20 minute portion of the update. You posponed {count_lines(logfile)} times and exceeded the max tries of {chances}.'),
+            (f'Your machine is about to update to macOS {settings.target}. You will be offline for about a 20 minute portion of the update. You postponed {count_lines(logfile)} times and exceeded the max tries of {chances}.'),
             'Proceed')   
     ip = Mw(
         'hud',
