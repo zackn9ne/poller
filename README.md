@@ -1,4 +1,5 @@
 # poller. a macOS Upgrader for use with JamfPro
+A tool to run major updates to macOS.. eg 10.14->10.15
 
 [![poller](https://github.com/zackn9ne/poller/blob/master/img/demo.gif)](https://github.com/zackn9ne)
 
