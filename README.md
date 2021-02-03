@@ -1,5 +1,5 @@
 # poller. a macOS Upgrader for use with JamfPro
-A tool to run major updates to macOS.. eg 10.14->10.15
+A tool to run major updates to macOS.. eg 10.14->10.15.. 10.15 -> 10.16
 
 [![poller](https://github.com/zackn9ne/poller/blob/master/img/demo.gif)](https://github.com/zackn9ne)
 
@@ -18,7 +18,9 @@ A tool to run major updates to macOS.. eg 10.14->10.15
 4. low probabability of users messing this up
 
 # the bad?
-1. needs python 3.7, so create a distributable python
-2. get the diistributable python and this script on the end user computer
-3. run things: `/opt/companyname/python3.7 /opt/companyname/poller/poller.py -t 10.15`
+1. you will need JamfPro (enrolled?) installed on the target computer `/Library/Application Support/JAMF/bin/\
+jamfHelper.app/Contents/MacOS/jamfHelper`
+2. needs python 3.7, so create a distributable python
+3. get the diistributable python and this script on the end user computer
+4. run things: `/opt/companyname/python3.7 /opt/companyname/poller/poller.py -t 10.15`
 
